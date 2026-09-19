@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
+ * Author: Alexandre Torgue <alexandre.torgue@st.com> for STMicroelectronics.
+ */
+
+/dts-v1/;
+
+#include "stm32mp157.dtsi"
+#include "stm32mp15-pinctrl.dtsi"
+#include "stm32mp15xxac-pinctrl.dtsi"
+#include "stm32mp15xx-dkx.dtsi"
+
+/ {
+	model = "FSDEV FSMP1A Board";
+	compatible = "fsdev,fsmp1a", "st,stm32mp157";
+
+	aliases {
+		ethernet0 = &ethernet0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	/*
+	 * Board is discrete power supplied: no STPMIC1 on I2C4. Replace the
+	 * PMIC rails still referenced by stm32mp15xx-dkx.dtsi by fixed
+	 * regulators carrying the same labels.
+	 */
+	vdd: regulator-vdd {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	v3v3: regulator-v3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "v3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_usb: regulator-vdd-usb {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_usb";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	v3v3_hdmi: regulator-v3v3-hdmi {
+		compatible = "regulator-fixed";
+		regulator-name = "v3v3_hdmi";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	v1v2_hdmi: regulator-v1v2-hdmi {
+		compatible = "regulator-fixed";
+		regulator-name = "v1v2_hdmi";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	v1v8_audio: regulator-v1v8-audio {
+		compatible = "regulator-fixed";
+		regulator-name = "v1v8_audio";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+};
+
+/* I2C4 carries only the STPMIC1 and the STUSB1600, neither is fitted. */
+/delete-node/ &i2c4;
+
+/* Its USB-C connector endpoint went away with the STUSB1600. */
+&usbotg_hs {
+	/delete-node/ port;
+};
+
+&sdmmc1 {
+	cd-gpios = <&gpioh 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+};
+
+&ethernet0 {
+	phy-handle = <&phy1>;
+
+	mdio {
+		/delete-node/ ethernet-phy@0;
+
+		phy1: ethernet-phy@1 {
+			reg = <1>;
+		};
+	};
+};
